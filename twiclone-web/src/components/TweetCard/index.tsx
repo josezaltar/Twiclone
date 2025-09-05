@@ -24,7 +24,6 @@ type Props = {
 };
 
 export default function TweetCard({ tweet, listKey = ['tweets'], disableLink = false }: Props) {
-  const { user } = useAuthStore();
   const qc = useQueryClient();
 
   const like = useMutation({
