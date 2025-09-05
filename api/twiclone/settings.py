@@ -3,39 +3,69 @@ from datetime import timedelta
 import os
 import dj_database_url
 
+# carrega .env localmente (sem efeito no Railway/Vercel, que já injetam env vars)
+try:
+    from dotenv import load_dotenv  # pip install python-dotenv
+
+    _ENV_LOADED = load_dotenv()
+except Exception:
+    _ENV_LOADED = False
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+def env(name: str, default: str | None = None) -> str | None:
+    return os.environ.get(name, default)
+
+
+def env_bool(name: str, default: bool = False) -> bool:
+    v = os.environ.get(name)
+    if v is None:
+        return default
+    return str(v).lower() in ("1", "true", "yes", "on")
+
+
+def env_list(name: str, default: str = "") -> list[str]:
+    raw = os.environ.get(name, default)
+    return [x.strip() for x in raw.split(",") if x.strip()]
+
+
 # === Segurança / Debug ===
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev_change_me")
-DEBUG = os.environ.get("DJANGO_DEBUG", "true").lower() == "true"
+SECRET_KEY = env("DJANGO_SECRET_KEY", "dev_change_me")
+DEBUG = env_bool("DJANGO_DEBUG", True)
 
-ALLOWED_HOSTS = ["*", "twiclone-production.up.railway.app"]
+# Em produção, não use "*" – prefira variáveis.
+ALLOWED_HOSTS = env_list(
+    "DJANGO_ALLOWED_HOSTS",
+    "localhost,127.0.0.1,twiclone-production.up.railway.app",
+)
 
-# Se o Django recusar CSRF no deploy, coloque seu domínio aqui também
-CSRF_TRUSTED_ORIGINS = [
-    "https://*.vercel.app",
-    "https://*.railway.app",
-]
+# CSRF confere esquema (http/https). Aceita lista separada por vírgula.
+# Ex.: "https://meuapp.vercel.app,https://*.vercel.app,https://*.railway.app"
+CSRF_TRUSTED_ORIGINS = env_list(
+    "DJANGO_CSRF_TRUSTED",
+    "https://*.vercel.app,https://*.railway.app",
+)
 
 INSTALLED_APPS = [
-    # Django padrão
+    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Terceiros
+    # 3rd
     "rest_framework",
     "corsheaders",
-    # App local (ajuste se seu app tiver outro nome)
+    # app local (ajuste se seu app tiver outro nome)
     "social",
 ]
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
-    # WhiteNoise serve arquivos estáticos em produção
+    # WhiteNoise para arquivos estáticos em produção
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -65,21 +95,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "twiclone.wsgi.application"
 
-# === Banco de dados ===
-# Railway/Render fornecem DATABASE_URL. Localmente caímos no SQLite.
+# === Banco ===
 DATABASES = {
     "default": dj_database_url.parse(
-        os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
+        env("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
         conn_max_age=600,
     )
 }
 
-# === Auth ===
-# Se você tem um User customizado no app "social", mantenha a linha abaixo.
-# Se NÃO tiver, comente esta linha.
+# === Auth/User ===
+# Só mantenha se tem User customizado em "social"
 AUTH_USER_MODEL = "social.User"
 
-AUTH_PASSWORD_VALIDATORS = []  # simplificado para o projeto
+AUTH_PASSWORD_VALIDATORS = []  # simplificado
 
 LANGUAGE_CODE = "pt-br"
 TIME_ZONE = "America/Sao_Paulo"
@@ -96,16 +124,18 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# === CORS (Vercel + localhost) ===
-CORS_ALLOWED_ORIGINS = [
+# === CORS ===
+# Use a env para permitir o domínio do Vercel em produção.
+# Ex.: CORS_ALLOWED_ORIGINS="https://seuapp.vercel.app"
+CORS_ALLOWED_ORIGINS = env_list(
+    "CORS_ALLOWED_ORIGINS",
     "http://localhost:3000",
-    # seu domínio Vercel (preview e prod)
-    "https://twiclone-git-main-jose-zaltars-projects.vercel.app",
-    "https://*.vercel.app",
-]
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https://.*\.vercel\.app$",
-]
+)
+# Regex para qualquer *.vercel.app
+CORS_ALLOWED_ORIGIN_REGEXES = [r"^https://.*\.vercel\.app$"]
+
+# Se usar cookies/sessão cross-site:
+# CORS_ALLOW_CREDENTIALS = True
 
 # === DRF + JWT ===
 REST_FRAMEWORK = {
