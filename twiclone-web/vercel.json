@@ -3,11 +3,15 @@
   "builds": [
     {
       "src": "twiclone-web/package.json",
-      "use": "@vercel/static-build"
+      "use": "@vercel/static-build",
+      "config": { "distDir": "build" }
     }
   ],
   "routes": [
     { "handle": "filesystem" },
     { "src": "/.*", "dest": "/index.html" }
-  ]
+  ],
+  "env": {
+    "REACT_APP_API_URL": "https://twiclone-production.up.railway.app/api"
+  }
 }
