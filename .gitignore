@@ -1,0 +1,32 @@
+node_modules/
+build/
+dist/
+npm-debug.log*
+yarn-*.log*
+pnpm-debug.log*
+.DS_Store
+
+# Dotenv
+.env
+twiclone-web/.env
+api/.env
+
+# --- Python / Django ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Banco local
+db.sqlite3
+api/db.sqlite3
+
+api/staticfiles/
+api/media/
+
+# VSCode
+.vscode/
