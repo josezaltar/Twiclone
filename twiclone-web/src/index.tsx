@@ -10,6 +10,7 @@ import { themes } from './styles/theme';
 import { useUIStore } from './store/ui';
 import { useAuthStore } from './store/auth';
 import App from './App';
+import { ErrorBoundary } from './ErrorBoundary';
 
 const qc = new QueryClient();
 
@@ -42,7 +43,9 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={qc}>
-      <Root />
+      <ErrorBoundary>
+        <Root />
+      </ErrorBoundary>
     </QueryClientProvider>
   </React.StrictMode>
 );

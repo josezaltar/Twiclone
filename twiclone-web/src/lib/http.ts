@@ -1,34 +1,35 @@
 // src/lib/http.ts
-import axios, { AxiosError, AxiosResponse } from 'axios';
+import axios from 'axios';
 
-const RAW_BASE =
-  (process.env.REACT_APP_API_URL && process.env.REACT_APP_API_URL.trim()) ||
-  'http://localhost:4000/api';
+function resolveBaseURL(): string {
+  // 1) Vercel/Build: use a var de ambiente
+  const env = process.env.REACT_APP_API_URL;
 
-const BASE_URL = RAW_BASE.replace(/\/$/, '');
+  // 2) Se não houver, tenta uma opção segura:
+  //    - em produção, use o mesmo domínio (útil caso você use um proxy /api)
+  //    - em dev, fallback para localhost:8000/api
+  if (env && env.trim()) return env.trim();
+
+  if (typeof window !== 'undefined') {
+    // Se você tiver um proxy no vercel/nginx que aponte /api -> backend, isso funciona
+    return '/api';
+  }
+
+  // Fallback para SSR/build (CRA não faz SSR, mas mantemos seguro)
+  return 'http://localhost:8000/api';
+}
 
 export const http = axios.create({
-  baseURL: BASE_URL,
-  timeout: 15000,
+  baseURL: resolveBaseURL(),
   withCredentials: false,
-  headers: { 'Content-Type': 'application/json' },
 });
 
+// Opcional: interceptor para logar erros (evita “tela branca silenciosa”)
 http.interceptors.response.use(
-  (res: AxiosResponse) => res,
-  (err: AxiosError<any>) => {
-    let message = 'Erro de rede.';
-    if (err.response) {
-      const data = err.response.data as any;
-      message =
-        (typeof data === 'string' && data) ||
-        data?.detail ||
-        data?.message ||
-        data?.error ||
-        `HTTP ${err.response.status}`;
-    } else if (err.message) {
-      message = err.message;
-    }
-    return Promise.reject(new Error(message));
+  (res) => res,
+  (err) => {
+    // Você pode colocar um console.error aqui
+    // console.error('[HTTP ERROR]', err?.response || err?.message);
+    return Promise.reject(err);
   }
 );

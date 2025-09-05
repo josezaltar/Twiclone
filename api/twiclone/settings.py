@@ -9,17 +9,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev_change_me")
 DEBUG = os.environ.get("DJANGO_DEBUG", "true").lower() == "true"
 
-# Quando DEBUG=false, configure DJANGO_ALLOWED_HOSTS="seu-domínio.com,subdominio.up.railway.app"
-ALLOWED_HOSTS = [
-    h for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",") if h
-] or (["*"] if DEBUG else [])
+ALLOWED_HOSTS = ["*", "twiclone-production.up.railway.app"]
 
 # Se o Django recusar CSRF no deploy, coloque seu domínio aqui também
 CSRF_TRUSTED_ORIGINS = [
-    *[f"https://{h}" for h in ALLOWED_HOSTS if h],
     "https://*.vercel.app",
     "https://*.railway.app",
-    "https://*.onrender.com",
 ]
 
 INSTALLED_APPS = [
@@ -104,6 +99,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # === CORS (Vercel + localhost) ===
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    # seu domínio Vercel (preview e prod)
+    "https://twiclone-git-main-jose-zaltars-projects.vercel.app",
+    "https://*.vercel.app",
 ]
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https://.*\.vercel\.app$",
