@@ -1,32 +1,24 @@
 from pathlib import Path
 import os
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# --- Segurança / ambiente ---
+# Use a mesma chave "fictícia" local, ou defina via variável de ambiente SECRET_KEY
 SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY",
+    "SECRET_KEY",
     "GLtHnY8KvqPsndDT6M7wBjj4K-NFNInUuHFmd3Ae0hGnbtBHh6Zl3L4W72ULdrR_DFGkSTTrHob_a4OpUCKgBw",
 )
-DEBUG = os.environ.get("DJANGO_DEBUG", "0") == "1"
+
+DEBUG = False
 
 ALLOWED_HOSTS = [
+    "josezaltar.pythonanywhere.com",
+    ".pythonanywhere.com",
     "localhost",
     "127.0.0.1",
-    "josezaltar.pythonanywhere.com",
 ]
 
-# Frontend
-CORS_ALLOWED_ORIGINS = [
-    "https://twiiclone.netlify.app",
-    "http://localhost:3000",
-]
-CSRF_TRUSTED_ORIGINS = [
-    "https://twiiclone.netlify.app",
-    "https://josezaltar.pythonanywhere.com",
-]
-
-# --- Apps ---
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -39,9 +31,6 @@ INSTALLED_APPS = [
     "social",
 ]
 
-AUTH_USER_MODEL = "social.User"
-
-# --- Middlewares ---
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -74,7 +63,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "twiclone.wsgi.application"
 
-# --- Banco (SQLite por padrão no PythonAnywhere free) ---
+# SQLite no PythonAnywhere (ok para este projeto)
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -82,7 +71,38 @@ DATABASES = {
     }
 }
 
-# --- DRF / JWT ---
+LANGUAGE_CODE = "pt-br"
+TIME_ZONE = "America/Sao_Paulo"
+USE_I18N = True
+USE_TZ = True
+
+# Static/Media (serviço pelo WhiteNoise + mapeamento de /static/ e /media/ na Web tab)
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+# CORS / CSRF para seu front na Netlify
+CORS_ALLOWED_ORIGINS = [
+    "https://twiiclone.netlify.app",
+    "http://localhost:3000",
+]
+CSRF_TRUSTED_ORIGINS = [
+    "https://twiiclone.netlify.app",
+    "https://josezaltar.pythonanywhere.com",
+    "http://localhost:3000",
+]
+CORS_ALLOW_CREDENTIALS = True  # se precisar enviar cookies; para JWT não é necessário
+
+# DRF + JWT
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -90,23 +110,14 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
 
-# --- i18n / timezone ---
-LANGUAGE_CODE = "pt-br"
-TIME_ZONE = "America/Sao_Paulo"
-USE_I18N = True
-USE_TZ = True
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=12),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+}
 
-# --- Static / Media ---
-STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# Reforços de segurança básicos para produção via HTTPS no PA
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# --- HTTPS (opcional ajustar depois) ---
-SECURE_SSL_REDIRECT = False
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
