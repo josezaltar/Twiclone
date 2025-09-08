@@ -4,30 +4,25 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ==================================
-# Núcleo
-# ==================================
-# >>> COLOQUE AQUI A SUA CHAVE FICTÍCIA (aquela mesma que você já me passou) <<<
+# --- Núcleo ---
 SECRET_KEY = "GLtHnY8KvqPsndDT6M7wBjj4K-NFNInUuHFmd3Ae0hGnbtBHh6Zl3L4W72ULdrR_DFGkSTTrHob_a4OpUCKgBw"
-
 DEBUG = False
 
 ALLOWED_HOSTS = [
     "josezaltar.pythonanywhere.com",
+    ".pythonanywhere.com",
     "localhost",
     "127.0.0.1",
 ]
 
-# Domínios que podem enviar cookies/CSRF (precisam do esquema http/https)
+# Domínios confiáveis p/ CSRF (precisam ter esquema)
 CSRF_TRUSTED_ORIGINS = [
     "https://twiiclone.netlify.app",
     "https://josezaltar.pythonanywhere.com",
-    "http://localhost:3000",  # útil em DEV
+    "http://localhost:3000",
 ]
 
-# ==================================
-# Apps
-# ==================================
+# --- Apps ---
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -42,14 +37,11 @@ INSTALLED_APPS = [
 
 AUTH_USER_MODEL = "social.User"
 
-# ==================================
-# Middleware
-# ==================================
+# --- Middleware ---
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    # CORS o mais alto possível (depois de Security/WhiteNoise)
-    "corsheaders.middleware.CorsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",  # antes de CommonMiddleware
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -78,9 +70,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "twiclone.wsgi.application"
 
-# ==================================
-# Banco de dados
-# ==================================
+# --- Banco de dados ---
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -88,9 +78,7 @@ DATABASES = {
     }
 }
 
-# ==================================
-# Locale / TZ
-# ==================================
+# --- Locale / TZ ---
 LANGUAGE_CODE = "pt-br"
 TIME_ZONE = "America/Sao_Paulo"
 USE_I18N = True
@@ -98,9 +86,7 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# ==================================
-# Arquivos estáticos / mídia
-# ==================================
+# --- Estáticos / Mídia ---
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
@@ -114,9 +100,7 @@ STORAGES = {
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# ==================================
-# DRF / JWT
-# ==================================
+# --- DRF / JWT ---
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -124,25 +108,22 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
 
+from datetime import timedelta
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=12),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 
-# ==================================
-# CORS (front no Netlify e DEV local)
-# ==================================
+# --- CORS (Netlify + DEV) ---
 CORS_ALLOWED_ORIGINS = [
     "https://twiiclone.netlify.app",
     "http://localhost:3000",
 ]
-# Se algum dia precisar mandar cookies/sessão pelo front:
+# Se precisar cookies de sessão, habilite:
 # CORS_ALLOW_CREDENTIALS = True
 
-# ==================================
-# Segurança (PA atrás de proxy)
-# ==================================
-# PythonAnywhere faz o TLS na frente e envia este header:
+# --- Segurança por trás de proxy (PA usa HTTPS) ---
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 if not DEBUG:
@@ -151,7 +132,6 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_REFERRER_POLICY = "same-origin"
-    # HSTS — pode manter assim em produção
-    SECURE_HSTS_SECONDS = 31536000  # 1 ano
+    SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
