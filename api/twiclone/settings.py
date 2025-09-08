@@ -37,7 +37,7 @@ DEBUG = env_bool("DJANGO_DEBUG", True)
 # Em produção, não use "*" – prefira variáveis.
 ALLOWED_HOSTS = env_list(
     "DJANGO_ALLOWED_HOSTS",
-    "localhost,127.0.0.1,twiclone-production.up.railway.app",
+    "localhost,127.0.0.1,osezaltar.pythonanywhere.com",
 )
 
 # CSRF confere esquema (http/https). Aceita lista separada por vírgula.
