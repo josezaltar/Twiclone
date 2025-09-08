@@ -19,6 +19,7 @@ export default function Layout({ children }: Props) {
           <NavItem to={`/${user?.username ?? 'demo'}`}>Perfil</NavItem>
           <NavItem to="/followers">Seguidores</NavItem>
           <NavItem to="/following">Seguindo</NavItem>
+          <NavItem to="/login">login</NavItem>
 
           {user && (
             <LogoutBtn

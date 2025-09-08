@@ -3,17 +3,20 @@ from datetime import timedelta
 import os
 import dj_database_url
 
-# carrega .env localmente (sem efeito no Railway/Vercel, que já injetam env vars)
-try:
-    from dotenv import load_dotenv  # pip install python-dotenv
-
-    _ENV_LOADED = load_dotenv()
-except Exception:
-    _ENV_LOADED = False
-
+# === Diretórios ===
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# === Dotenv (carrega o .env explicitamente do BASE_DIR) ===
+# Isso garante que em produção (PythonAnywhere) seu .env seja lido.
+try:
+    from dotenv import load_dotenv
 
+    load_dotenv(BASE_DIR / ".env")
+except Exception:
+    pass
+
+
+# === Helpers de env ===
 def env(name: str, default: str | None = None) -> str | None:
     return os.environ.get(name, default)
 
@@ -32,21 +35,22 @@ def env_list(name: str, default: str = "") -> list[str]:
 
 # === Segurança / Debug ===
 SECRET_KEY = env("DJANGO_SECRET_KEY", "dev_change_me")
-DEBUG = env_bool("DJANGO_DEBUG", True)
+# Em produção, queremos False por padrão; mude via DJANGO_DEBUG no .env
+DEBUG = env_bool("DJANGO_DEBUG", False)
 
-# Em produção, não use "*" – prefira variáveis.
+# Hosts permitidos — default já compatível com PythonAnywhere
 ALLOWED_HOSTS = env_list(
     "DJANGO_ALLOWED_HOSTS",
-    "localhost,127.0.0.1,josezaltar.pythonanywhere.com",
+    "josezaltar.pythonanywhere.com,localhost,127.0.0.1",
 )
 
-# CSRF confere esquema (http/https). Aceita lista separada por vírgula.
-# Ex.: "https://meuapp.vercel.app,https://*.vercel.app,https://*.railway.app"
+# CSRF: inclua seus domínios com esquema (https://)
 CSRF_TRUSTED_ORIGINS = env_list(
     "DJANGO_CSRF_TRUSTED",
-    "https://*.vercel.app,https://*.railway.app",
+    "https://*.netlify.app,https://*.pythonanywhere.com",
 )
 
+# === Apps ===
 INSTALLED_APPS = [
     # Django
     "django.contrib.admin",
@@ -58,9 +62,12 @@ INSTALLED_APPS = [
     # 3rd
     "rest_framework",
     "corsheaders",
-    # app local (ajuste se seu app tiver outro nome)
+    # app local
     "social",
 ]
+
+# Se você REALMENTE tiver um User customizado em social.models.User, mantenha:
+# AUTH_USER_MODEL = "social.User"
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -95,7 +102,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "twiclone.wsgi.application"
 
-# === Banco ===
+# === Banco de Dados ===
 DATABASES = {
     "default": dj_database_url.parse(
         env("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
@@ -103,12 +110,10 @@ DATABASES = {
     )
 }
 
-# === Auth/User ===
-# Só mantenha se tem User customizado em "social"
-AUTH_USER_MODEL = "social.User"
+# === Validação de senha (simples por enquanto) ===
+AUTH_PASSWORD_VALIDATORS = []
 
-AUTH_PASSWORD_VALIDATORS = []  # simplificado
-
+# === Locale/Timezone ===
 LANGUAGE_CODE = "pt-br"
 TIME_ZONE = "America/Sao_Paulo"
 USE_I18N = True
@@ -125,14 +130,17 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # === CORS ===
-# Use a env para permitir o domínio do Vercel em produção.
-# Ex.: CORS_ALLOWED_ORIGINS="https://seuapp.vercel.app"
+# Para chamada direta do Netlify, defina no .env:
+# CORS_ALLOWED_ORIGINS=https://twiiclone.netlify.app
 CORS_ALLOWED_ORIGINS = env_list(
     "CORS_ALLOWED_ORIGINS",
     "http://localhost:3000",
 )
-# Regex para qualquer *.vercel.app
-CORS_ALLOWED_ORIGIN_REGEXES = [r"^https://.*\.vercel\.app$"]
+# Regex para subdomínios comuns (opcional)
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.netlify\.app$",
+    r"^https://.*\.pythonanywhere\.com$",
+]
 
 # Se usar cookies/sessão cross-site:
 # CORS_ALLOW_CREDENTIALS = True
