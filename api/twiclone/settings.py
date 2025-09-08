@@ -4,30 +4,30 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ========================
+# ==================================
 # Núcleo
-# ========================
-# >>> COLOQUE AQUI A CHAVE FICTÍCIA QUE TE PASSEI <<<
+# ==================================
+# >>> COLOQUE AQUI A SUA CHAVE FICTÍCIA (aquela mesma que você já me passou) <<<
 SECRET_KEY = "GLtHnY8KvqPsndDT6M7wBjj4K-NFNInUuHFmd3Ae0hGnbtBHh6Zl3L4W72ULdrR_DFGkSTTrHob_a4OpUCKgBw"
 
-# Produção no PythonAnywhere
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    "josezaltar.pythonanywhere.com",  # seu backend em produção
+    "josezaltar.pythonanywhere.com",
     "localhost",
     "127.0.0.1",
 ]
 
-# Origem confiável para POST/CSRF vindos do front
+# Domínios que podem enviar cookies/CSRF (precisam do esquema http/https)
 CSRF_TRUSTED_ORIGINS = [
     "https://twiiclone.netlify.app",
     "https://josezaltar.pythonanywhere.com",
+    "http://localhost:3000",  # útil em DEV
 ]
 
-# ========================
+# ==================================
 # Apps
-# ========================
+# ==================================
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -42,13 +42,13 @@ INSTALLED_APPS = [
 
 AUTH_USER_MODEL = "social.User"
 
-# ========================
+# ==================================
 # Middleware
-# ========================
+# ==================================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    # Coloque o CORS o mais alto possível
+    # CORS o mais alto possível (depois de Security/WhiteNoise)
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -78,9 +78,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "twiclone.wsgi.application"
 
-# ========================
+# ==================================
 # Banco de dados
-# ========================
+# ==================================
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -88,17 +88,19 @@ DATABASES = {
     }
 }
 
-# ========================
+# ==================================
 # Locale / TZ
-# ========================
+# ==================================
 LANGUAGE_CODE = "pt-br"
 TIME_ZONE = "America/Sao_Paulo"
 USE_I18N = True
 USE_TZ = True
 
-# ========================
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ==================================
 # Arquivos estáticos / mídia
-# ========================
+# ==================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
@@ -112,11 +114,9 @@ STORAGES = {
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# ========================
+# ==================================
 # DRF / JWT
-# ========================
+# ==================================
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -129,25 +129,29 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 
-# ========================
-# CORS (front no Netlify)
-# ========================
+# ==================================
+# CORS (front no Netlify e DEV local)
+# ==================================
 CORS_ALLOWED_ORIGINS = [
     "https://twiiclone.netlify.app",
     "http://localhost:3000",
 ]
-# (por padrão já permite cabeçalho Authorization)
+# Se algum dia precisar mandar cookies/sessão pelo front:
+# CORS_ALLOW_CREDENTIALS = True
 
-# ========================
-# Segurança em produção (PA)
-# ========================
-# PythonAnywhere faz o TLS na frente e envia o header abaixo:
+# ==================================
+# Segurança (PA atrás de proxy)
+# ==================================
+# PythonAnywhere faz o TLS na frente e envia este header:
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-# Força HTTPS, cookies seguros e CSRF seguro em produção
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_REFERRER_POLICY = "same-origin"
     SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = "same-origin"
+    # HSTS — pode manter assim em produção
+    SECURE_HSTS_SECONDS = 31536000  # 1 ano
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
