@@ -22,7 +22,7 @@ urlpatterns = [
     # Auth
     path("auth/register/", RegisterView.as_view()),
     path("auth/login/", LoginView.as_view()),
-    path("auth/me/", MeView.as_view()),
+    path("me/", MeView.as_view()),
     # Tweets
     path("tweets/", TweetListCreate.as_view()),
     path("tweets/<int:pk>/like/toggle/", ToggleLike.as_view()),
