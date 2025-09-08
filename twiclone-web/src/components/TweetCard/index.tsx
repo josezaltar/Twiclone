@@ -2,7 +2,6 @@
 import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { RealAPI, Tweet } from '../../lib/realApi';
-import { useAuthStore } from '../../store/auth';
 import {
   Card,
   Row,
