@@ -1,13 +1,17 @@
 from pathlib import Path
-from datetime import timedelta
 import os
+from datetime import timedelta
+
 import dj_database_url
 
-# === Diretórios ===
+# -------------------------------------------------
+# Paths / Base
+# -------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# === Dotenv (carrega o .env explicitamente do BASE_DIR) ===
-# Isso garante que em produção (PythonAnywhere) seu .env seja lido.
+# -------------------------------------------------
+# .env (lido do arquivo na raiz do projeto)
+# -------------------------------------------------
 try:
     from dotenv import load_dotenv
 
@@ -16,16 +20,14 @@ except Exception:
     pass
 
 
-# === Helpers de env ===
-def env(name: str, default: str | None = None) -> str | None:
-    return os.environ.get(name, default)
-
-
-def env_bool(name: str, default: bool = False) -> bool:
-    v = os.environ.get(name)
-    if v is None:
-        return default
-    return str(v).lower() in ("1", "true", "yes", "on")
+def env_bool(name: str, default: str = "False") -> bool:
+    return os.environ.get(name, default).strip().lower() in (
+        "1",
+        "true",
+        "t",
+        "yes",
+        "on",
+    )
 
 
 def env_list(name: str, default: str = "") -> list[str]:
@@ -33,48 +35,52 @@ def env_list(name: str, default: str = "") -> list[str]:
     return [x.strip() for x in raw.split(",") if x.strip()]
 
 
-# === Segurança / Debug ===
-SECRET_KEY = env("DJANGO_SECRET_KEY", "dev_change_me")
-# Em produção, queremos False por padrão; mude via DJANGO_DEBUG no .env
-DEBUG = env_bool("DJANGO_DEBUG", False)
+# -------------------------------------------------
+# Core
+# -------------------------------------------------
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "CHANGE-ME-IN-PRODUCTION")
+DEBUG = env_bool("DJANGO_DEBUG", "False")
 
-# Hosts permitidos — default já compatível com PythonAnywhere
 ALLOWED_HOSTS = env_list(
     "DJANGO_ALLOWED_HOSTS",
-    "josezaltar.pythonanywhere.com,localhost,127.0.0.1",
+    "localhost,127.0.0.1,josezaltar.pythonanywhere.com",
 )
 
-# CSRF: inclua seus domínios com esquema (https://)
 CSRF_TRUSTED_ORIGINS = env_list(
     "DJANGO_CSRF_TRUSTED",
-    "https://*.netlify.app,https://*.pythonanywhere.com",
+    "https://josezaltar.pythonanywhere.com",
 )
 
-# === Apps ===
+# -------------------------------------------------
+# Apps
+# -------------------------------------------------
 INSTALLED_APPS = [
-    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # 3rd
+    # Terceiros
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
-    # app local
-    "social",
 ]
 
-# Se você REALMENTE tiver um User customizado em social.models.User, mantenha:
-# AUTH_USER_MODEL = "social.User"
+# Seu app local
+INSTALLED_APPS += ["social"]
 
+# Se você usa usuário customizado no app social:
+AUTH_USER_MODEL = "social.User"  # remova esta linha se usar o User padrão do Django
+
+# -------------------------------------------------
+# Middleware
+# -------------------------------------------------
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
-    # WhiteNoise para arquivos estáticos em produção
-    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # static files via WhiteNoise
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -87,7 +93,7 @@ ROOT_URLCONF = "twiclone.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -102,26 +108,30 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "twiclone.wsgi.application"
 
-# === Banco de Dados ===
+# -------------------------------------------------
+# Banco de dados
+# -------------------------------------------------
 DATABASES = {
-    "default": dj_database_url.parse(
-        env("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
+    "default": dj_database_url.config(
+        env="DATABASE_URL",
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
         conn_max_age=600,
     )
 }
 
-# === Validação de senha (simples por enquanto) ===
-AUTH_PASSWORD_VALIDATORS = []
-
-# === Locale/Timezone ===
+# -------------------------------------------------
+# I18N / Timezone
+# -------------------------------------------------
 LANGUAGE_CODE = "pt-br"
-TIME_ZONE = "America/Sao_Paulo"
+TIME_ZONE = os.environ.get("TZ", "America/Sao_Paulo")
 USE_I18N = True
 USE_TZ = True
 
-# === Arquivos estáticos / mídia ===
+# -------------------------------------------------
+# Static / Media
+# -------------------------------------------------
 STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = BASE_DIR / "staticfiles"  # -> mapeie para este caminho no painel Web
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
@@ -129,23 +139,9 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# === CORS ===
-# Para chamada direta do Netlify, defina no .env:
-# CORS_ALLOWED_ORIGINS=https://twiiclone.netlify.app
-CORS_ALLOWED_ORIGINS = env_list(
-    "CORS_ALLOWED_ORIGINS",
-    "http://localhost:3000",
-)
-# Regex para subdomínios comuns (opcional)
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https://.*\.netlify\.app$",
-    r"^https://.*\.pythonanywhere\.com$",
-]
-
-# Se usar cookies/sessão cross-site:
-# CORS_ALLOW_CREDENTIALS = True
-
-# === DRF + JWT ===
+# -------------------------------------------------
+# DRF / JWT
+# -------------------------------------------------
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -154,6 +150,26 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=3),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=12),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
+# -------------------------------------------------
+# CORS
+# -------------------------------------------------
+CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS", "")
+CORS_ALLOW_CREDENTIALS = True
+# Em DEV, liberar tudo ajuda; em prod mantenha restrito
+if DEBUG and not CORS_ALLOWED_ORIGINS:
+    CORS_ALLOW_ALL_ORIGINS = True
+
+# -------------------------------------------------
+# Segurança (produção)
+# -------------------------------------------------
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
