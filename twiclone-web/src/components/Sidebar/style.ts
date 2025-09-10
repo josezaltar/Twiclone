@@ -2,56 +2,70 @@
 import styled from 'styled-components';
 
 export const Wrapper = styled.aside`
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
+  padding: 12px;
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
 `;
 
 export const Row = styled.div`
-  display: grid;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 `;
 
 export const ThemeBtn = styled.button`
-  padding: 10px 14px;
-  border-radius: ${({ theme }) => theme.radius.pill};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.card};
-  color: ${({ theme }) => theme.colors.text};
-  font-weight: 700;
+  appearance: none;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: transparent;
+  color: inherit;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 14px;
   cursor: pointer;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.hover};
+    background: rgba(0, 0, 0, 0.06);
+  }
+
+  &:active {
+    transform: translateY(1px);
   }
 `;
 
 export const UserBox = styled.div`
-  display: grid;
-  grid-template-columns: 40px 1fr;
-  gap: 10px;
+  display: flex;
   align-items: center;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radius.md};
-  padding: 10px 12px;
-  background: ${({ theme }) => theme.colors.card};
+  gap: 10px;
+  padding: 12px 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
 `;
 
 export const Avatar = styled.img`
-  width: 40px; height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   object-fit: cover;
-  background: ${({ theme }) => theme.colors.input};
+  background: #ddd;
 `;
 
 export const Info = styled.div`
-  display: grid;
-  line-height: 1.1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 `;
 
 export const Name = styled.div`
-  font-weight: 800;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.2;
+  color: inherit;
 `;
 
 export const Handle = styled.div`
   font-size: 12px;
-  color: ${({ theme }) => theme.colors.muted};
+  color: rgba(0, 0, 0, 0.55);
+  line-height: 1.2;
+  word-break: break-all;
 `;

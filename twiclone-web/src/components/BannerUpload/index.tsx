@@ -1,50 +1,36 @@
 // src/components/BannerUpload/index.tsx
-import { useRef } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import React, { useRef, useState } from 'react';
 import { RealAPI } from '../../lib/realApi';
-import { useAuthStore } from '../../store/auth';
-import { Btn, ErrorMsg } from './style';
+import { Container, StyledInput } from './style';
 
-type Props = {
-  className?: string;
-  buttonText?: string;
-};
+type Props = { onUploaded?: (url: string) => void };
 
-export default function BannerUpload({ className, buttonText = 'Trocar capa' }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const { user, setUser } = useAuthStore();
+export default function BannerUpload({ onUploaded }: Props) {
+  const ref = useRef<HTMLInputElement | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const { mutateAsync, isPending, error } = useMutation<string, Error, File>({
-    mutationFn: file => RealAPI.updateUserBanner(file),
-    onSuccess: url => {
-      if (user) setUser({ ...user, banner_url: url });
-    },
-  });
-
-  function pickFile() {
-    inputRef.current?.click();
-  }
-
-  async function onChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    await mutateAsync(file);
-    e.currentTarget.value = '';
+    setLoading(true);
+    try {
+      const { url } = await RealAPI.uploadBanner(file);
+      onUploaded?.(url);
+    } finally {
+      setLoading(false);
+      if (ref.current) ref.current.value = '';
+    }
   }
 
   return (
-    <div className={className}>
-      <input
-        ref={inputRef}
+    <Container>
+      <StyledInput
+        ref={ref}
         type="file"
         accept="image/*"
-        style={{ display: 'none' }}
-        onChange={onChange}
+        onChange={onPick}
+        disabled={loading}
       />
-      <Btn onClick={pickFile} disabled={isPending}>
-        {isPending ? 'Enviando…' : buttonText}
-      </Btn>
-      {error && <ErrorMsg>{error.message}</ErrorMsg>}
-    </div>
+    </Container>
   );
 }

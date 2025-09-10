@@ -1,10 +1,10 @@
+// src/styles/global.ts
 import { createGlobalStyle } from 'styled-components';
 
 export const GlobalStyle = createGlobalStyle`
   *, *::before, *::after { box-sizing: border-box; }
   html, body, #root { height: 100%; }
 
-  /* ajuda o navegador a escolher a paleta de scrollbars, etc. */
   :root { color-scheme: ${({ theme }) => theme.name}; }
 
   body {
@@ -16,7 +16,6 @@ export const GlobalStyle = createGlobalStyle`
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* transição suave ao alternar o tema */
   body, input, textarea, button, select, a, div, header, main, section, nav, footer {
     transition: background-color .18s ease, color .18s ease, border-color .18s ease;
   }

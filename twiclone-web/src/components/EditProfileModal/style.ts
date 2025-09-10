@@ -3,85 +3,98 @@ import styled from 'styled-components';
 export const Backdrop = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  z-index: 49;
+  background: rgba(0, 0, 0, 0.6);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  z-index: 1000;
 `;
 
-export const Card = styled.form`
-  position: fixed;
-  z-index: 50;
-  inset: 0;
-  margin: auto;
-  width: min(600px, 92vw);
-  max-height: 90vh;
-  overflow: auto;
-  background: rgba(20, 20, 20, 0.95);
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 16px;
-  padding: 18px;
+export const Modal = styled.div`
+  background: #111;
+  color: #fff;
+  width: 520px;
+  max-width: 100%;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
 `;
 
-export const CloseX = styled.button`
-  position: absolute;
-  top: 8px;
-  right: 12px;
-  background: transparent;
-  border: 0;
-  color: #aaa;
-  font-size: 22px;
-  cursor: pointer;
-  &:hover {
-    color: #fff;
-  }
-`;
-
-export const Title = styled.h2`
-  margin: 0 0 12px;
+export const Title = styled.h3`
+  margin: 0 0 12px 0;
   font-size: 18px;
 `;
 
-export const Row = styled.div`
+export const FormGrid = styled.div`
+  display: grid;
+  gap: 12px;
+`;
+
+export const Field = styled.div`
   display: grid;
   gap: 6px;
-  margin: 10px 0 14px;
+
+  label {
+    font-size: 14px;
+    color: #ddd;
+  }
 `;
 
-export const Label = styled.label`
-  font-size: 13px;
-  color: #d1d5db;
-`;
-
-export const Field = styled.input`
-  height: 40px;
-  border-radius: 10px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  background: rgba(255, 255, 255, 0.04);
-  color: ${({ theme }) => theme.colors.text};
-  padding: 8px 12px;
+export const Input = styled.input`
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #2a2a2a;
+  background: #1a1a1a;
+  color: #fff;
   outline: none;
-  font: inherit;
+
   &:focus {
-    background: rgba(255, 255, 255, 0.07);
+    border-color: #3a8bfd;
+    box-shadow: 0 0 0 3px rgba(58, 139, 253, 0.25);
+  }
+`;
+
+export const TextArea = styled.textarea`
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #2a2a2a;
+  background: #1a1a1a;
+  color: #fff;
+  outline: none;
+  resize: vertical;
+
+  &:focus {
+    border-color: #3a8bfd;
+    box-shadow: 0 0 0 3px rgba(58, 139, 253, 0.25);
   }
 `;
 
 export const Actions = styled.div`
+  margin-top: 16px;
   display: flex;
   gap: 8px;
   justify-content: flex-end;
-  margin-top: 6px;
 `;
 
-export const Button = styled.button<{ $ghost?: boolean }>`
-  background: ${({ $ghost, theme }) => ($ghost ? 'transparent' : theme.colors.primary)};
-  color: ${({ $ghost }) => ($ghost ? '#fff' : '#000')};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  padding: 8px 14px;
+export const Button = styled.button`
+  background: #1d9bf0;
+  color: #fff;
+  border: none;
   border-radius: 999px;
-  font-weight: 700;
+  padding: 10px 16px;
+  font-weight: 600;
   cursor: pointer;
+
   &:disabled {
     opacity: 0.6;
     cursor: default;
   }
+`;
+
+export const ButtonSecondary = styled(Button)`
+  background: transparent;
+  color: #ddd;
+  border: 1px solid #2a2a2a;
 `;

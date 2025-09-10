@@ -1,90 +1,96 @@
-// src/components/Layout/style.ts
 import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
 
-/** Grid principal */
-export const Shell = styled.div`
+export const Wrapper = styled.div`
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
-  column-gap: 0; /* sem espaço entre sidebar e feed */
+  grid-template-columns: 260px 1fr;
   min-height: 100vh;
+  background: #000;
+  color: #fff;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
-/** Sidebar */
-export const Aside = styled.aside`
+export const Side = styled.aside`
   position: sticky;
   top: 0;
+  align-self: start;
   height: 100vh;
-  overflow: auto;
-  border-right: 1px solid ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.bg};
-  padding: 12px 12px;
+  padding: 24px 16px;
+  border-right: 1px solid #1f1f1f;
+  background: #0b0b0b;
+
+  @media (max-width: 900px) {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid #1f1f1f;
+  }
 `;
 
 export const Brand = styled.div`
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 800;
-  padding: 8px 6px 14px;
+  letter-spacing: 0.2px;
+  margin-bottom: 20px;
 `;
 
 export const Nav = styled.nav`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 4px 0 16px;
+  display: grid;
+  gap: 8px;
 `;
 
-export const NavItem = styled(NavLink)`
-  display: block;
-  padding: 12px 16px;
-  border-radius: ${({ theme }) => theme.radius.md};
-  font-weight: 700;
-  text-decoration: none;
-  color: ${({ theme }) => theme.colors.text};
-
-  &.active {
-    background: ${({ theme }) => theme.colors.hover};
-  }
-  &:hover {
-    background: ${({ theme }) => theme.colors.hover};
-  }
-`;
-
-export const ProfileCard = styled.div`
-  display: flex;
+export const NavItem = styled(NavLink).attrs({ className: 'nav-item' })`
+  display: inline-flex;
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.radius.md};
-  background: ${({ theme }) => theme.colors.card};
-  margin-top: auto;
-`;
-
-export const LogoutBtn = styled.button`
-  width: 100%;
-  margin-top: 10px;
-  padding: 12px 16px;
-  border-radius: ${({ theme }) => theme.radius.pill};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.card};
-  color: ${({ theme }) => theme.colors.text};
-  font-weight: 700;
-  cursor: pointer;
+  border-radius: 999px;
+  text-decoration: none;
+  color: #ddd;
+  font-weight: 600;
+  transition: background 0.15s ease, color 0.15s ease;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.hover};
+    background: #161616;
+    color: #fff;
+  }
+
+  &.active {
+    background: #1d9bf0;
+    color: #fff;
   }
 `;
 
-/** Área principal (feed) */
-export const Main = styled.main`
-  min-height: 100vh;
-  background: ${({ theme }) => theme.colors.bg};
-  padding-left: 0;
-  margin-left: 0;
+export const LogoutBtn = styled.button`
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid #2a2a2a;
+  background: transparent;
+  color: #ddd;
+  font-weight: 600;
+  border-radius: 999px;
+  cursor: pointer;
+
+  &:hover {
+    background: #161616;
+    color: #fff;
+  }
 `;
 
-/* ---- ALIAS para compatibilidade com Layout/index.tsx antigo ---- */
-/* Seu Layout importava Wrapper e Side. Mantemos esses nomes também. */
-export { Shell as Wrapper, Aside as Side };
+export const Main = styled.main`
+  min-height: 100vh;
+  padding: 24px 16px;
+  display: block;
+
+  /* largura de timeline confortável */
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+
+  @media (max-width: 900px) {
+    max-width: 100%;
+  }
+`;

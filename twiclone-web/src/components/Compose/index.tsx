@@ -1,52 +1,53 @@
-import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { RealAPI as FakeAPI } from '../../lib/realApi';
-import { useAuthStore } from '../../store/auth';
+import React, { useState, KeyboardEvent } from 'react';
+import { RealAPI } from '../../lib/realApi';
+import { Form, TextArea, Actions, SubmitBtn } from './style';
 
-export default function Compose() {
-  const qc = useQueryClient();
-  const { user } = useAuthStore();
+type Props = {
+  onCreated?: () => void;
+};
+
+export default function Compose({ onCreated }: Props) {
   const [text, setText] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const m = useMutation({
-    mutationFn: () => FakeAPI.createTweet(text.trim()),
-    onSuccess: () => {
+  const canSend = !!text.trim() && !loading;
+
+  async function submit(e?: React.FormEvent) {
+    e?.preventDefault();
+    const body = text.trim();
+    if (!body) return;
+
+    setLoading(true);
+    try {
+      await RealAPI.createTweet(body);
       setText('');
-      qc.invalidateQueries({ queryKey: ['tweets'] });
-    },
-  });
+      onCreated?.();
+    } finally {
+      setLoading(false);
+    }
+  }
 
-  if (!user) return null;
+  function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+    // Atalho: Ctrl/Cmd + Enter
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && canSend) {
+      submit();
+    }
+  }
 
   return (
-    <div style={{ padding: 12, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-      <div style={{ display: 'flex', gap: 12 }}>
-        <img
-          src={
-            user.avatar_url ||
-            `https://api.dicebear.com/7.x/identicon/svg?seed=${user.username || 'anon'}`
-          }
-          alt="avatar"
-          style={{ width: 40, height: 40, borderRadius: '50%' }}
-        />
-        <div style={{ flex: 1 }}>
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="O que está acontecendo?"
-            maxLength={280}
-            style={{ width: '100%', minHeight: 70, resize: 'vertical' }}
-          />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
-            <button
-              onClick={() => m.mutate()}
-              disabled={m.isPending || !text.trim()}
-            >
-              {m.isPending ? 'Enviando…' : 'Twittar'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <Form onSubmit={submit} role="form" aria-label="Compor tweet">
+      <TextArea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={handleKeyDown}
+        rows={3}
+        placeholder="O que está acontecendo?"
+      />
+      <Actions>
+        <SubmitBtn type="submit" disabled={!canSend}>
+          {loading ? 'Enviando…' : 'Tweetar'}
+        </SubmitBtn>
+      </Actions>
+    </Form>
   );
 }

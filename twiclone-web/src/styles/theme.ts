@@ -45,4 +45,8 @@ export const lightTheme: DefaultTheme = {
   ...base,
 };
 
-export const themes = { light: lightTheme, dark: darkTheme };
+// Exporta o dicionário para facilitar a seleção no index.tsx
+export const themes: Record<'light' | 'dark', DefaultTheme> = {
+  light: lightTheme,
+  dark: darkTheme,
+};

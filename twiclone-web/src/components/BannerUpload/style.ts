@@ -1,28 +1,22 @@
 // src/components/BannerUpload/style.ts
 import styled from 'styled-components';
 
-export const Btn = styled.button`
-  padding: 8px 12px;
-  border-radius: ${({ theme }) => theme.radius.pill};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.card};
-  color: ${({ theme }) => theme.colors.text};
-  cursor: pointer;
-  font-weight: 700;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.hover};
-  }
-
-  &:disabled {
-    opacity: .6;
-    cursor: not-allowed;
-  }
+export const Container = styled.div`
+  /* Estilos para o container do seu banner, como tamanho e alinhamento */
+  width: 100%;
+  height: 200px;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
 `;
 
-export const ErrorMsg = styled.div`
-  color: #ef4444;
-  font-size: 13px;
-  margin-top: 6px;
-  font-weight: 600;
+export const StyledInput = styled.input`
+  /* Estilos para o input de arquivo.
+     Você pode ocultá-lo e criar um botão customizado para upload. */
+  border: 1px dashed #ccc;
+  padding: 16px;
+  border-radius: 4px;
+  text-align: center;
 `;

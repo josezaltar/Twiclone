@@ -1,7 +1,20 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { RealAPI as FakeAPI, User } from '../../lib/realApi';
-import { useAuthStore } from '../../store/auth';
+import { RealAPI } from '../../lib/realApi';
+import type { User } from '../../types/user';
+import { useAuth } from '../../store/auth';
+import {
+  Backdrop,
+  Modal,
+  Title,
+  FormGrid,
+  Field,
+  Input,
+  TextArea,
+  Actions,
+  Button,
+  ButtonSecondary,
+} from './style';
 
 type Initial = {
   userId?: number; // mantido por compatibilidade, não é usado no backend
@@ -22,66 +35,88 @@ export default function EditProfileModal({ initial, onClose }: Props) {
   const [location, setLocation] = useState(initial.location || '');
   const [website, setWebsite] = useState(initial.website || '');
 
-  const { setUser } = useAuthStore();
+  const setUser = useAuth((s) => s.setUser);
   const qc = useQueryClient();
 
   const m = useMutation<User, Error, void>({
     mutationFn: async () =>
-      await FakeAPI.updateProfile({
+      RealAPI.updateMyProfile({
         display_name: display.trim(),
         bio: bio.trim(),
         location: location.trim(),
         website: website.trim(),
       }),
     onSuccess: (updated) => {
+      // Atualiza estado global do usuário logado
       setUser(updated);
+
+      // Invalida caches comuns onde o perfil pode aparecer
       qc.invalidateQueries({ queryKey: ['profile'] });
+      qc.invalidateQueries({ queryKey: ['profile', updated.username] });
+      qc.invalidateQueries({ queryKey: ['auth', 'me'] });
+
       onClose();
     },
   });
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.6)',
-        display: 'grid',
-        placeItems: 'center',
-        padding: 16,
-        zIndex: 1000,
-      }}
-    >
-      <div style={{ background: '#111', padding: 16, borderRadius: 8, width: 520, maxWidth: '100%' }}>
-        <h3 style={{ marginTop: 0 }}>Editar perfil</h3>
-        <div style={{ display: 'grid', gap: 12 }}>
-          <label>
-            Nome de exibição
-            <input value={display} onChange={(e) => setDisplay(e.target.value)} />
-          </label>
-          <label>
-            Bio
-            <textarea value={bio} onChange={(e) => setBio(e.target.value)} />
-          </label>
-          <label>
-            Localização
-            <input value={location} onChange={(e) => setLocation(e.target.value)} />
-          </label>
-          <label>
-            Website
-            <input value={website} onChange={(e) => setWebsite(e.target.value)} />
-          </label>
-        </div>
+    <Backdrop role="dialog" aria-modal="true" onClick={onClose}>
+      <Modal onClick={(e) => e.stopPropagation()}>
+        <Title>Editar perfil</Title>
 
-        <div style={{ marginTop: 16, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} disabled={m.isPending}>Cancelar</button>
-          <button onClick={() => m.mutate()} disabled={m.isPending}>
+        <FormGrid>
+          <Field>
+            <label htmlFor="display_name">Nome de exibição</label>
+            <Input
+              id="display_name"
+              value={display}
+              onChange={(e) => setDisplay(e.target.value)}
+              placeholder="Seu nome público"
+              autoFocus
+            />
+          </Field>
+
+          <Field>
+            <label htmlFor="bio">Bio</label>
+            <TextArea
+              id="bio"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              rows={4}
+              placeholder="Fale um pouco sobre você"
+            />
+          </Field>
+
+          <Field>
+            <label htmlFor="location">Localização</label>
+            <Input
+              id="location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Cidade, País"
+            />
+          </Field>
+
+          <Field>
+            <label htmlFor="website">Website</label>
+            <Input
+              id="website"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              placeholder="https://seusite.com"
+            />
+          </Field>
+        </FormGrid>
+
+        <Actions>
+          <ButtonSecondary onClick={onClose} disabled={m.isPending}>
+            Cancelar
+          </ButtonSecondary>
+          <Button onClick={() => m.mutate()} disabled={m.isPending}>
             {m.isPending ? 'Salvando…' : 'Salvar'}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </Actions>
+      </Modal>
+    </Backdrop>
   );
 }

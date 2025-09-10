@@ -1,30 +1,51 @@
 // src/pages/Followers/index.tsx
+import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { RealAPI, User } from '../../lib/realApi';
-import UserRow from '../../components/UserRow';
-
-import { Container, Header, List } from './style';
-
-type Row = { user: User; isFollowing: boolean };
+import { RealAPI } from '../../lib/realApi';
+import FollowButton from '../../components/FollowButton';
+import {
+  ErrorMessage,
+  Loading,
+  Main,
+  List,
+  ListItem,
+  UserName,
+  FollowButtonWrapper,
+  Title,
+} from './style';
 
 export default function Followers() {
-  const { handle } = useParams<{ handle: string }>();
+  const { handle = '' } = useParams();
 
-  const { data = [] } = useQuery<Row[]>({
+  const q = useQuery({
     queryKey: ['followers', handle],
-    queryFn: () => RealAPI.listFollowersByHandle(handle!),
+    queryFn: () => RealAPI.followersByHandle(handle),
     enabled: !!handle,
   });
 
+  if (!handle) return <ErrorMessage>Handle não informado.</ErrorMessage>;
+  if (q.isLoading) return <Loading>Carregando…</Loading>;
+  if (q.isError) return <ErrorMessage>Erro ao carregar.</ErrorMessage>;
+
   return (
-    <Container>
-      <Header>Seguidores · @{handle}</Header>
+    <Main>
+      <Title>Seguidores de @{handle}</Title>
       <List>
-        {data.map(({ user, isFollowing }) => (
-          <UserRow key={user.id} user={user} isFollowing={isFollowing} />
+        {q.data?.map((row) => (
+          <ListItem key={row.user.id}>
+            <UserName>
+              {row.user.display_name} @{row.user.username}
+            </UserName>
+            <FollowButtonWrapper>
+              <FollowButton
+                handle={row.user.username}
+                initiallyFollowing={row.isFollowing}
+              />
+            </FollowButtonWrapper>
+          </ListItem>
         ))}
       </List>
-    </Container>
+    </Main>
   );
 }

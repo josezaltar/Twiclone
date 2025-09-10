@@ -1,81 +1,80 @@
-// src/pages/Profile/style.ts
 import styled from 'styled-components';
 
-export const Container = styled.div`
-  width: 100%;
+export const Wrap = styled.div`
+  max-width: 760px;
+  margin: 0 auto;
 `;
 
-export const BannerWrap = styled.div`
-  position: relative;
+export const Header = styled.header`
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  margin-bottom: 16px;
 `;
 
-export const BannerImg = styled.img`
+export const Banner = styled.div<{ $src?: string }>`
   width: 100%;
   aspect-ratio: 3 / 1;
-  object-fit: cover;
-  background: ${({ theme }) => theme.colors.input};
-`;
-
-export const BannerAction = styled.div`
-  position: absolute;
-  right: 16px;
-  bottom: 12px;
-`;
-
-export const HeaderRow = styled.div`
+  background: ${({ $src, theme }) =>
+    $src
+      ? `center/cover no-repeat url(${$src})`
+      : `linear-gradient(135deg, ${theme.colors.border}, ${theme.colors.card})`};
+  position: relative;
   display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 8px;
+`;
+
+export const AvatarWrap = styled.div`
+  display: flex;
+  align-items: center;
   gap: 12px;
-  align-items: end;
-  padding: 0 16px;
-  margin-top: -40px;
+  transform: translateY(-36px);
+  padding: 0 12px;
 `;
 
-export const Avatar = styled.img`
-  width: 80px;
-  height: 80px;
+export const AvatarImg = styled.img`
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid ${({ theme }) => theme.colors.bg};
   background: ${({ theme }) => theme.colors.card};
-  border: 4px solid
-    ${({ theme }) => (theme.name === 'light' ? 'rgba(255,255,255,.85)' : 'rgba(0,0,0,.6)')};
 `;
 
-export const Content = styled.div`
-  padding: 8px 16px;
+export const NameHandle = styled.div`
+  padding: 0 12px 8px 12px;
+  display: grid;
+  gap: 4px;
+
+  strong { font-size: 20px; }
+  span { color: ${({ theme }) => theme.colors.muted}; }
 `;
 
-export const DisplayName = styled.div`
-  font-size: 20px;
-  font-weight: 800;
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-export const Username = styled.div`
+export const Counters = styled.div`
+  padding: 0 12px 12px 12px;
   color: ${({ theme }) => theme.colors.muted};
+  font-size: 14px;
 `;
 
-export const Bio = styled.p`
-  margin-top: 8px;
+export const Actions = styled.div`
+  padding: 0 12px 16px 12px;
+`;
+
+export const SmallBtn = styled.button`
+  padding: 6px 10px;
+  font-size: 13px;
+  border-radius: ${({ theme }) => theme.radius.pill};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.card};
   color: ${({ theme }) => theme.colors.text};
-`;
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  cursor: pointer;
 
-export const StatsRow = styled.div`
-  display: flex;
-  gap: 16px;
-  margin-top: 8px;
-  color: ${({ theme }) => theme.colors.muted};
-
-  b {
-    color: ${({ theme }) => theme.colors.text};
+  &:hover {
+    background: ${({ theme }) => theme.colors.hover};
   }
 `;
 
-export const Divider = styled.div`
-  height: 1px;
-  width: 100%;
-  background: ${({ theme }) => theme.colors.border};
-`;
-
-export const NotFound = styled.div`
-  padding: 16px;
-  color: ${({ theme }) => theme.colors.muted};
+export const List = styled.div`
+  display: grid;
 `;

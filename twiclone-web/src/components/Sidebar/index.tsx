@@ -1,5 +1,5 @@
 // src/components/Sidebar/index.tsx
-import { useAuthStore } from '../../store/auth';
+import { useAuth } from '../../store/auth';
 import { useUIStore } from '../../store/ui';
 import {
   Wrapper,
@@ -13,9 +13,9 @@ import {
 } from './style';
 
 export default function Sidebar() {
-  const { user } = useAuthStore();
-  const themeMode = useUIStore(s => s.themeMode);
-  const toggleTheme = useUIStore(s => s.toggleTheme);
+  const { user } = useAuth();
+  const themeMode = useUIStore((s) => s.themeMode);
+  const toggleTheme = useUIStore((s) => s.toggleTheme);
 
   return (
     <Wrapper>

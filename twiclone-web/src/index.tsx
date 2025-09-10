@@ -1,51 +1,46 @@
-// src/index.tsx
-import React, { useEffect } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider } from 'styled-components';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from 'styled-components';
 
-import { GlobalStyle } from './styles/GlobalStyle';
-import { themes } from './styles/theme';
-import { useUIStore } from './store/ui';
-import { useAuthStore } from './store/auth';
 import App from './App';
-import { ErrorBoundary } from './ErrorBoundary';
+import { useAuth } from './store/auth';
+import { useUIStore } from './store/ui';
 
-const qc = new QueryClient();
+import { GlobalStyle } from './styles/global';     // <- caminho correto
+import { themes } from './styles/theme';           // <- agora exportado no theme.ts
 
-function Root() {
-  const mode = useUIStore((s) => s.themeMode);
-  const { restore } = useAuthStore();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 30_000 },
+  },
+});
 
-  useEffect(() => {
-    // tenta restaurar o usuário (token no localStorage)
-    restore();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+function Boot() {
+  // restaura sessão/token ao iniciar
+  React.useEffect(() => {
+    useAuth.getState().restore();
   }, []);
 
-  const theme = themes[mode as keyof typeof themes];
+  const mode = useUIStore((s) => s.themeMode) || 'dark'; // 'light' | 'dark'
+  const theme = themes[mode];
 
   return (
-    <ThemeProvider theme={theme}>
-      <GlobalStyle />
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={theme}>
+        <GlobalStyle />
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
-
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <React.StrictMode>
-    <QueryClientProvider client={qc}>
-      <ErrorBoundary>
-        <Root />
-      </ErrorBoundary>
-    </QueryClientProvider>
+    <Boot />
   </React.StrictMode>
 );

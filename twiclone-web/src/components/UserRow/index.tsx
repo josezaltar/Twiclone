@@ -1,5 +1,6 @@
 // src/components/UserRow/index.tsx
-import { User } from '../../types/user';
+import React from 'react';
+import type { User } from '../../types/user';
 import FollowButton from '../FollowButton';
 import { Row, Left, Avatar, Info, Name, Handle } from './style';
 
@@ -7,27 +8,37 @@ type Props = {
   user: User;
   isFollowing?: boolean;
   showFollow?: boolean;
+  className?: string;
 };
 
-export default function UserRow({ user, isFollowing = false, showFollow = true }: Props) {
+function UserRow({ user, isFollowing = false, showFollow = true, className }: Props) {
+  const handle = (user.username || '').trim();
+  const display = (user.display_name || handle || 'Usuário').trim();
+
+  const avatarUrl =
+    (user.avatar_url && user.avatar_url.trim()) ||
+    `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(handle || 'anon')}`;
+
   return (
-    <Row>
+    <Row className={className}>
       <Left>
         <Avatar
-          src={
-            user.avatar_url ||
-            `https://api.dicebear.com/7.x/identicon/svg?seed=${user.username}`
-          }
-          alt=""
+          src={avatarUrl}
+          alt={`Avatar de ${display}`}
+          loading="lazy"
+          decoding="async"
         />
         <Info>
-          <Name>{user.display_name || user.username}</Name>
-          <Handle>@{user.username}</Handle>
+          <Name title={display}>{display}</Name>
+          <Handle>@{handle}</Handle>
         </Info>
       </Left>
-      {showFollow && (
-        <FollowButton targetUserId={user.id} isFollowing={isFollowing} size="sm" />
+
+      {showFollow && handle && (
+        <FollowButton handle={handle} initiallyFollowing={isFollowing} />
       )}
     </Row>
   );
 }
+
+export default React.memo(UserRow);
