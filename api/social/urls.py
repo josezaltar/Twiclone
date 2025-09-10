@@ -19,23 +19,24 @@ from .views import (
 )
 
 urlpatterns = [
-    # Auth
-    path("auth/register/", RegisterView.as_view()),
-    path("auth/login/", LoginView.as_view()),
-    path("me/", MeView.as_view()),
-    # Tweets
-    path("tweets/", TweetListCreate.as_view()),
-    path("tweets/<int:pk>/like/toggle/", ToggleLike.as_view()),
-    path("tweets/<int:pk>/retweet/toggle/", ToggleRetweet.as_view()),
-    path("profiles/<str:handle>/tweets/", ListTweetsByHandle.as_view()),
-    # Perfil + follow
-    path("profiles/<str:handle>/", ProfileByHandle.as_view()),
-    path("profiles/<str:handle>/followers/", FollowersByHandle.as_view()),
-    path("profiles/<str:handle>/following/", FollowingByHandle.as_view()),
-    path("profiles/<str:handle>/follow/toggle/", ToggleFollowByHandle.as_view()),
-    path("users/<int:user_id>/follow/toggle/", ToggleFollowById.as_view()),
-    path("me/following/ids/", MyFollowingIds.as_view()),
-    path("me/profile/", UpdateMyProfile.as_view()),
-    path("me/avatar/", UploadAvatar.as_view()),
-    path("me/banner/", UploadBanner.as_view()),
+    # auth
+    path("register", RegisterView.as_view()),
+    path("login", LoginView.as_view()),
+    path("me", MeView.as_view()),
+    # tweets
+    path("tweets", TweetListCreate.as_view()),
+    path("tweets/<int:pk>/like", ToggleLike.as_view()),
+    path("tweets/<int:pk>/retweet", ToggleRetweet.as_view()),
+    path("users/<str:handle>/tweets", ListTweetsByHandle.as_view()),
+    # perfis / follow
+    path("users/<str:handle>", ProfileByHandle.as_view()),
+    path("users/<str:handle>/followers", FollowersByHandle.as_view()),
+    path("users/<str:handle>/following", FollowingByHandle.as_view()),
+    path("follow/<int:user_id>", ToggleFollowById.as_view()),
+    path("follow/by-handle/<str:handle>", ToggleFollowByHandle.as_view()),
+    path("me/following/ids", MyFollowingIds.as_view()),
+    path("me/profile", UpdateMyProfile.as_view()),
+    # uploads
+    path("me/upload-avatar", UploadAvatar.as_view()),
+    path("me/upload-banner", UploadBanner.as_view()),
 ]
