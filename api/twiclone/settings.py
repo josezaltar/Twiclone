@@ -4,7 +4,7 @@ from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Use a mesma chave "fictícia" local, ou defina via variável de ambiente SECRET_KEY
+# Usa a mesma chave fictícia/local ou a de ambiente, se existir
 SECRET_KEY = os.environ.get(
     "SECRET_KEY",
     "GLtHnY8KvqPsndDT6M7wBjj4K-NFNInUuHFmd3Ae0hGnbtBHh6Zl3L4W72ULdrR_DFGkSTTrHob_a4OpUCKgBw",
@@ -63,7 +63,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "twiclone.wsgi.application"
 
-# SQLite no PythonAnywhere (ok para este projeto)
+# SQLite no PythonAnywhere
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -76,21 +76,19 @@ TIME_ZONE = "America/Sao_Paulo"
 USE_I18N = True
 USE_TZ = True
 
-# Static/Media (serviço pelo WhiteNoise + mapeamento de /static/ e /media/ na Web tab)
+# Static/Media (WhiteNoise)
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
     },
 }
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# CORS / CSRF para seu front na Netlify
+# CORS / CSRF (frontend na Netlify)
 CORS_ALLOWED_ORIGINS = [
     "https://twiiclone.netlify.app",
     "http://localhost:3000",
@@ -100,7 +98,9 @@ CSRF_TRUSTED_ORIGINS = [
     "https://josezaltar.pythonanywhere.com",
     "http://localhost:3000",
 ]
-CORS_ALLOW_CREDENTIALS = True  # se precisar enviar cookies; para JWT não é necessário
+CORS_ALLOW_CREDENTIALS = (
+    True  # para cookies; não é necessário para JWT, mas não atrapalha
+)
 
 # DRF + JWT
 REST_FRAMEWORK = {
@@ -112,10 +112,14 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=12),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
+    # >>> ajustes críticos para o 401 de token inválido <<<
+    "AUTH_HEADER_TYPES": ("Bearer",),  # espera "Authorization: Bearer <token>"
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,  # usa a mesma SECRET_KEY para assinar/validar
 }
 
-# Reforços de segurança básicos para produção via HTTPS no PA
+# Segurança (HTTPS)
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
