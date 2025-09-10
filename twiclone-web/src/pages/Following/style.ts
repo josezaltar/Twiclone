@@ -1,4 +1,3 @@
-// src/pages/Following/style.ts
 import styled from 'styled-components';
 
 export const Main = styled.main`

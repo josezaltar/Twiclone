@@ -1,4 +1,3 @@
-// src/pages/Followers/style.ts
 import styled from 'styled-components';
 
 export const Main = styled.main`
@@ -6,7 +5,7 @@ export const Main = styled.main`
 `;
 
 export const Title = styled.h2`
-  /* Estilos para o título da página, se precisar de mais. */
+  margin: 0 0 12px 0;
 `;
 
 export const Loading = styled.div`
@@ -21,6 +20,7 @@ export const ErrorMessage = styled.div`
 export const List = styled.ul`
   list-style: none;
   padding: 0;
+  margin: 0;
 `;
 
 export const ListItem = styled.li`
@@ -28,7 +28,7 @@ export const ListItem = styled.li`
   gap: 12px;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
 export const UserName = styled.div`
