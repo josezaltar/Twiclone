@@ -1,3 +1,4 @@
+// src/pages/Profile/index.tsx
 import { useMemo, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -5,6 +6,7 @@ import { RealAPI } from '../../lib/realApi';
 import type { ProfileView, Tweet } from '../../lib/realApi';
 import { useAuth } from '../../store/auth';
 import TweetCard from '../../components/TweetCard';
+import FollowButton from '../../components/FollowButton';
 import {
   Wrap,
   Header,
@@ -51,6 +53,14 @@ function getFollowingCount(p?: ProfileView): number {
   if (Array.isArray(anyp.following)) return anyp.following.length;
   if (typeof anyp.following === 'number') return anyp.following;
   return 0;
+}
+
+/** Lê o “já sigo?” do shape que o backend retornar */
+function getFollowingFlag(p?: ProfileView): boolean {
+  const anyp: any = p ?? {};
+  if (typeof anyp.following === 'boolean') return anyp.following;
+  if (typeof anyp.is_following === 'boolean') return anyp.is_following;
+  return false;
 }
 
 export default function Profile() {
@@ -107,6 +117,7 @@ export default function Profile() {
 
   const followersCount = getFollowersCount(profile);
   const followingCount = getFollowingCount(profile);
+  const iFollowHim = getFollowingFlag(profile);
 
   // Só aqui fazemos returns condicionais (depois de todos os hooks)
   if (!profile) {
@@ -144,7 +155,12 @@ export default function Profile() {
           Seguidores: {followersCount} · Seguindo: {followingCount}
         </Counters>
 
-        <Actions>{/* ações extras se quiser */}</Actions>
+        <Actions>
+          {/* Botão de seguir/desseguir apenas quando não for meu perfil */}
+          {!isMe && u.username && (
+            <FollowButton handle={u.username} initiallyFollowing={iFollowHim} />
+          )}
+        </Actions>
       </Header>
 
       <List>
