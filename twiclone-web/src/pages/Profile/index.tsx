@@ -137,7 +137,13 @@ export default function Profile() {
         </Banner>
 
         <AvatarWrap>
-          <AvatarImg src={avatarSrc} alt="" />
+          <AvatarImg
+            src={avatarSrc}
+            alt=""
+            onError={(e) => {
+              e.currentTarget.src = `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(u.username || 'user')}`;
+            }}
+/>
           {isMe && (
             <label>
               <SmallBtn as="span">Trocar foto</SmallBtn>
