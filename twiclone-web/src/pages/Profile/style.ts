@@ -17,11 +17,22 @@ export const Banner = styled.div<{ $src?: string }>`
     $src
       ? `center/cover no-repeat url(${$src})`
       : `linear-gradient(135deg, ${theme.colors.border}, ${theme.colors.card})`};
-  position: relative;
+  position: relative; /* importante para posicionar ações */
+  overflow: hidden;
+`;
+
+/* container para o botão do banner */
+export const BannerActions = styled.div`
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 2;
   display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  padding: 8px;
+`;
+
+/* input de arquivo invisível, acionado por label htmlFor */
+export const HiddenFile = styled.input.attrs({ type: 'file' })`
+  display: none;
 `;
 
 export const AvatarWrap = styled.div`
@@ -46,8 +57,12 @@ export const NameHandle = styled.div`
   display: grid;
   gap: 4px;
 
-  strong { font-size: 20px; }
-  span { color: ${({ theme }) => theme.colors.muted}; }
+  strong {
+    font-size: 20px;
+  }
+  span {
+    color: ${({ theme }) => theme.colors.muted};
+  }
 `;
 
 export const Counters = styled.div`
@@ -69,6 +84,8 @@ export const SmallBtn = styled.button`
   color: ${({ theme }) => theme.colors.text};
   box-shadow: ${({ theme }) => theme.shadows.sm};
   cursor: pointer;
+  position: relative;
+  z-index: 3; /* garante clique acima de qualquer sobreposição */
 
   &:hover {
     background: ${({ theme }) => theme.colors.hover};
