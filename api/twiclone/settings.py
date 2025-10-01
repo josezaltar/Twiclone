@@ -22,6 +22,8 @@ ALLOWED_HOSTS = [
     ".pythonanywhere.com",
     "localhost",
     "127.0.0.1",
+    "twiclone.netlify.app",
+    ".netlify.app",
 ]
 
 INSTALLED_APPS = [
@@ -97,15 +99,18 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # CORS/CSRF
-CORS_ALLOWED_ORIGINS = os.getenv(
-    "CORS_ALLOWED_ORIGINS",
-    "http://localhost:3000,http://127.0.0.1:3000"
-).split(",")
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://twiclone.netlify.app",
+]
 
-CSRF_TRUSTED_ORIGINS = os.getenv(
-    "CSRF_TRUSTED_ORIGINS",
-    "http://localhost:3000,http://127.0.0.1:3000"
-).split(",")
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://twiclone.netlify.app",
+    "https://josezaltar.pythonanywhere.com",
+]
 
 CORS_ALLOW_CREDENTIALS = True
 
