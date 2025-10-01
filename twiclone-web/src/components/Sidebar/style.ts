@@ -34,6 +34,27 @@ export const ThemeBtn = styled.button`
   }
 `;
 
+export const ActionBtn = styled.button`
+  appearance: none;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: transparent;
+  color: inherit;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.06);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+`;
+
 export const UserBox = styled.div`
   display: flex;
   align-items: center;

@@ -1,43 +1,44 @@
+// src/pages/Followers/index.tsx
 import React from 'react';
-import { useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { RealAPI } from '../../lib/realApi';
-import type { UserMini } from '../../types/user';
 import { useAuth } from '../../store/auth';
-import FollowButton from '../../components/FollowButton';
 import {
-  ErrorMessage,
-  Loading,
   Main,
-  List,
-  ListItem,
-  UserName,
-  FollowButtonWrapper,
   Title,
+  Loading,
+  ErrorMessage,
+  Grid,
+  UserCard,
+  AvatarWrapper,
+  Avatar,
+  UserInfo,
+  Name,
+  Handle,
+  Bio,
+  Stats,
+  FollowBtn,
 } from './style';
-
-// O endpoint /profiles/:handle/followers retorna uma lista de entradas:
-// { user: UserMini; isFollowing?: boolean }
-type FollowEntry = {
-  user: UserMini;
-  isFollowing?: boolean;
-};
 
 export default function Followers() {
   const { handle: handleParam } = useParams<{ handle?: string }>();
   const { user } = useAuth();
-
-  // Se não vier na URL, usa o handle do usuário logado
+  const navigate = useNavigate();
+  const qc = useQueryClient();
   const handle = handleParam ?? user?.username ?? '';
 
-  const {
-    data: rows = [],
-    isLoading,
-    isError,
-  } = useQuery<FollowEntry[]>({
+  const { data: rows = [], isLoading, isError } = useQuery({
     queryKey: ['followers', handle],
     queryFn: () => RealAPI.followersByHandle(handle),
     enabled: !!handle,
+  });
+
+  const followMut = useMutation({
+    mutationFn: (targetHandle: string) => RealAPI.toggleFollowByHandle(targetHandle),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['followers', handle] });
+    },
   });
 
   if (!handle) return <ErrorMessage>Handle não informado.</ErrorMessage>;
@@ -46,22 +47,47 @@ export default function Followers() {
 
   return (
     <Main>
-      <Title>Seguidores de @{handle}</Title>
-      <List>
-        {rows.map((row) => (
-          <ListItem key={row.user.id}>
-            <UserName>
-              {row.user.display_name || row.user.username} @{row.user.username}
-            </UserName>
-            <FollowButtonWrapper>
-              <FollowButton
-                handle={row.user.username}
-                initiallyFollowing={!!row.isFollowing}
-              />
-            </FollowButtonWrapper>
-          </ListItem>
-        ))}
-      </List>
+      <Title>Seguidores · @{handle}</Title>
+      
+      {rows.length === 0 ? (
+        <ErrorMessage>Nenhum seguidor ainda.</ErrorMessage>
+      ) : (
+        <Grid>
+          {rows.map((row) => (
+            <UserCard key={row.user.id}>
+              <div onClick={() => navigate(`/${row.user.username}`)} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                <AvatarWrapper>
+                  <Avatar
+                    src={
+                      row.user.avatar_url ||
+                      `https://api.dicebear.com/7.x/identicon/svg?seed=${row.user.username}`
+                    }
+                    alt={row.user.display_name || row.user.username}
+                  />
+                </AvatarWrapper>
+                <UserInfo>
+                  <Name>{row.user.display_name || row.user.username}</Name>
+                  <Handle>@{row.user.username}</Handle>
+                  {row.user.bio && <Bio>{row.user.bio}</Bio>}
+                  <Stats>
+                    {row.user.location && <span>📍 {row.user.location}</span>}
+                  </Stats>
+                </UserInfo>
+              </div>
+              <FollowBtn
+                $following={row.isFollowing}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  followMut.mutate(row.user.username);
+                }}
+                disabled={followMut.isPending}
+              >
+                {row.isFollowing ? 'Seguindo' : 'Seguir'}
+              </FollowBtn>
+            </UserCard>
+          ))}
+        </Grid>
+      )}
     </Main>
   );
 }

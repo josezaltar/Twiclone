@@ -64,6 +64,26 @@ export const NavItem = styled(NavLink).attrs({ className: 'nav-item' })`
   }
 `;
 
+export const ActionBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: #ddd;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: #161616;
+    color: #fff;
+  }
+`;
+
 export const LogoutBtn = styled.button`
   margin-top: 8px;
   padding: 10px 12px;

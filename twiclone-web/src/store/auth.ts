@@ -1,6 +1,7 @@
 // src/store/auth.ts
 import { create } from 'zustand';
-import { RealAPI, setAuthToken } from '../lib/realApi';
+import { RealAPI } from '../lib/realApi';
+import { setAuthToken } from '../lib/http';
 import type { User } from '../types/user';
 
 type AuthState = {
@@ -31,7 +32,6 @@ export const useAuth = create<AuthState>((set, get) => ({
       const me = await RealAPI.me();
       set({ user: me });
     } catch {
-      // token inválido
       setAuthToken(undefined);
       set({ token: null, user: null });
       try {
@@ -53,7 +53,6 @@ export const useAuth = create<AuthState>((set, get) => ({
 
   register: async (handle, displayName, password) => {
     await RealAPI.register(handle, displayName, password);
-    // após registrar, já faz login
     await get().login(handle, password);
   },
 

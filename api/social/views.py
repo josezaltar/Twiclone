@@ -1,6 +1,4 @@
 from django.shortcuts import render
-
-# Create your views here.
 from django.contrib.auth import authenticate
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -23,9 +21,7 @@ from .serializers import (
 )
 
 
-# ---------- Helpers ----------
 def issue_token_for(user: User) -> str:
-    """Gera apenas o access token (como seu front espera em login)."""
     refresh = RefreshToken.for_user(user)
     return str(refresh.access_token)
 
@@ -76,13 +72,13 @@ class MeView(APIView):
 class TweetListCreate(APIView):
     def get(self, request):
         scope = request.query_params.get("scope", "all")
-        qs = Tweet.objects.all()
+        qs = Tweet.objects.filter(reply_to__isnull=True)
         if scope == "following":
             ids = list(request.user.following.values_list("id", flat=True)) + [
                 request.user.id
             ]
             qs = qs.filter(author_id__in=ids)
-        ser = TweetSerializer(qs, many=True)
+        ser = TweetSerializer(qs, many=True, context={'request': request})
         return Response(ser.data)
 
     def post(self, request):
@@ -90,7 +86,31 @@ class TweetListCreate(APIView):
         if not text:
             return Response({"detail": "Texto vazio."}, status=400)
         t = Tweet.objects.create(author=request.user, text=text)
-        return Response(TweetSerializer(t).data, status=201)
+        return Response(TweetSerializer(t, context={'request': request}).data, status=201)
+
+
+class TweetReplies(APIView):
+    permission_classes = [permissions.AllowAny]
+    
+    def get(self, request, pk: int):
+        tweet = get_object_or_404(Tweet, pk=pk)
+        replies = Tweet.objects.filter(reply_to=tweet)
+        return Response(TweetSerializer(replies, many=True, context={'request': request}).data)
+
+
+class CreateReply(APIView):
+    def post(self, request, pk: int):
+        tweet = get_object_or_404(Tweet, pk=pk)
+        text = (request.data.get("text") or "").strip()
+        if not text:
+            return Response({"detail": "Texto vazio."}, status=400)
+        
+        reply = Tweet.objects.create(
+            author=request.user, 
+            text=text,
+            reply_to=tweet
+        )
+        return Response(TweetSerializer(reply, context={'request': request}).data, status=201)
 
 
 class ToggleLike(APIView):
@@ -120,17 +140,17 @@ class ToggleRetweet(APIView):
 
 
 class ListTweetsByHandle(APIView):
-    permission_classes = [permissions.AllowAny]  # perfil público
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request, handle: str):
         user = get_object_or_404(User, username__iexact=handle)
         qs = Tweet.objects.filter(author=user)
-        return Response(TweetSerializer(qs, many=True).data)
+        return Response(TweetSerializer(qs, many=True, context={'request': request}).data)
 
 
 # ---------- Perfil / Follow ----------
 class ProfileByHandle(APIView):
-    permission_classes = [permissions.AllowAny]  # perfil público
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request, handle: str):
         u = get_object_or_404(User, username__iexact=handle)
@@ -214,7 +234,31 @@ class UpdateMyProfile(APIView):
         return Response(UserSerializer(u).data)
 
 
-# Upload de avatar/banner (retorna { url })
+class ChangePassword(APIView):
+    def post(self, request):
+        current_password = request.data.get("current_password", "")
+        new_password = request.data.get("new_password", "")
+        
+        if not current_password or not new_password:
+            return Response(
+                {"detail": "Informe a senha atual e a nova senha."}, 
+                status=400
+            )
+        
+        user = request.user
+        
+        if not user.check_password(current_password):
+            return Response(
+                {"detail": "Senha atual incorreta."}, 
+                status=400
+            )
+        
+        user.set_password(new_password)
+        user.save()
+        
+        return Response({"detail": "Senha alterada com sucesso."})
+
+
 class UploadAvatar(APIView):
     def post(self, request):
         file = request.FILES.get("avatar")

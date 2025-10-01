@@ -1,28 +1,11 @@
 // src/lib/http.ts
 import axios from 'axios';
 
-/**
- * Resolve a baseURL segura:
- * - Em produção, use REACT_APP_API_URL (Netlify).
- * - Se não houver, tenta "/api" (caso você proxie no host).
- * - Fallback de dev: http://localhost:8000/api
- */
-function resolveBaseURL(): string {
-  const env = process.env.REACT_APP_API_URL?.trim();
-
-  if (env) return env;
-
-  if (typeof window !== 'undefined') {
-    // Se você não usa proxy no Netlify, mantenha REACT_APP_API_URL setada.
-    // Mesmo assim deixo "/api" como segunda opção.
-    return '/api';
-  }
-
-  return 'http://localhost:8000/api';
-}
+// 🔥 URL fixa para desenvolvimento
+const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 export const http = axios.create({
-  baseURL: resolveBaseURL(),
+  baseURL: API_BASE_URL,
   withCredentials: false,
 });
 
@@ -35,11 +18,11 @@ export function setAuthToken(token?: string) {
   }
 }
 
-// (Opcional) log básico de erros — evita “tela branca silenciosa”
+// Log básico de erros
 http.interceptors.response.use(
   (res) => res,
   (err) => {
-    // console.error('[HTTP ERROR]', err?.response || err?.message);
+    console.error('[HTTP ERROR]', err?.response?.data || err?.message);
     return Promise.reject(err);
   }
 );

@@ -7,6 +7,12 @@ import {
   Backdrop,
   Modal,
   Title,
+  BannerSection,
+  BannerPreview,
+  AvatarSection,
+  AvatarPreview,
+  UploadBtn,
+  HiddenFile,
   FormGrid,
   Field,
   Input,
@@ -17,7 +23,7 @@ import {
 } from './style';
 
 type Initial = {
-  userId?: number; // mantido por compatibilidade, não é usado no backend
+  userId?: number;
   display_name: string;
   bio: string;
   location: string;
@@ -35,34 +41,95 @@ export default function EditProfileModal({ initial, onClose }: Props) {
   const [location, setLocation] = useState(initial.location || '');
   const [website, setWebsite] = useState(initial.website || '');
 
+  const user = useAuth((s) => s.user);
   const setUser = useAuth((s) => s.setUser);
   const qc = useQueryClient();
 
+  const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url || '');
+  const [bannerPreview, setBannerPreview] = useState(user?.banner_url || '');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+
   const m = useMutation<User, Error, void>({
-    mutationFn: async () =>
-      RealAPI.updateMyProfile({
+    mutationFn: async () => {
+      // Upload avatar se houver
+      if (avatarFile) {
+        await RealAPI.uploadAvatar(avatarFile);
+      }
+
+      // Upload banner se houver
+      if (bannerFile) {
+        await RealAPI.uploadBanner(bannerFile);
+      }
+
+      // Atualiza perfil
+      return RealAPI.updateMyProfile({
         display_name: display.trim(),
         bio: bio.trim(),
         location: location.trim(),
         website: website.trim(),
-      }),
+      });
+    },
     onSuccess: (updated) => {
-      // Atualiza estado global do usuário logado
       setUser(updated);
-
-      // Invalida caches comuns onde o perfil pode aparecer
       qc.invalidateQueries({ queryKey: ['profile'] });
       qc.invalidateQueries({ queryKey: ['profile', updated.username] });
       qc.invalidateQueries({ queryKey: ['auth', 'me'] });
-
       onClose();
     },
   });
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setBannerFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setBannerPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <Backdrop role="dialog" aria-modal="true" onClick={onClose}>
       <Modal onClick={(e) => e.stopPropagation()}>
         <Title>Editar perfil</Title>
+
+        <BannerSection>
+          <BannerPreview $src={bannerPreview}>
+            <HiddenFile id="banner-upload" accept="image/*" onChange={handleBannerChange} />
+            <UploadBtn as="label" htmlFor="banner-upload">
+              Trocar capa
+            </UploadBtn>
+          </BannerPreview>
+        </BannerSection>
+
+        <AvatarSection>
+          <AvatarPreview
+            src={
+              avatarPreview ||
+              `https://api.dicebear.com/7.x/identicon/svg?seed=${user?.username}`
+            }
+            alt=""
+          />
+          <HiddenFile id="avatar-upload" accept="image/*" onChange={handleAvatarChange} />
+          <UploadBtn as="label" htmlFor="avatar-upload">
+            Trocar foto
+          </UploadBtn>
+        </AvatarSection>
 
         <FormGrid>
           <Field>

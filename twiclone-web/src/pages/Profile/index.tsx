@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { RealAPI } from '../../lib/realApi';
@@ -14,10 +14,9 @@ import {
   AvatarImg,
   NameHandle,
   Counters,
-  Actions,
-  SmallBtn,
   List,
   HiddenFile,
+  SmallBtn,
 } from './style';
 
 type UserLike = {
@@ -25,6 +24,9 @@ type UserLike = {
   display_name?: string;
   avatar_url?: string;
   banner_url?: string;
+  bio?: string;
+  location?: string;
+  website?: string;
 };
 
 function extractUser(p?: ProfileView): UserLike {
@@ -60,7 +62,6 @@ export default function Profile() {
 
   const isMe = user?.username === handle;
 
-  // dados
   const { data: profile } = useQuery<ProfileView>({
     queryKey: ['profile', handle],
     queryFn: () => RealAPI.profileByHandle(handle),
@@ -73,7 +74,6 @@ export default function Profile() {
     enabled: !!handle,
   });
 
-  // derivados
   const u = extractUser(profile);
 
   const avatarSrc = useMemo(
@@ -87,7 +87,7 @@ export default function Profile() {
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
-      const res = await RealAPI.uploadAvatar(file); // { url }
+      const res = await RealAPI.uploadAvatar(file);
       if (isMe && user) setUser({ ...user, avatar_url: res.url });
       qc.invalidateQueries({ queryKey: ['profile', handle] });
     },
@@ -98,7 +98,7 @@ export default function Profile() {
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
-      const res = await RealAPI.uploadBanner(file); // { url }
+      const res = await RealAPI.uploadBanner(file);
       if (isMe && user) setUser({ ...user, banner_url: res.url });
       qc.invalidateQueries({ queryKey: ['profile', handle] });
     },
@@ -109,10 +109,9 @@ export default function Profile() {
   const followingCount = getFollowingCount(profile);
 
   if (!profile) {
-    return <div style={{ padding: 16 }}>Carregando…</div>;
+    return <div style={{ padding: 16 }}>Carregando...</div>;
   }
 
-  // ids estáveis para htmlFor
   const avatarInputId = 'avatar-file';
   const bannerInputId = 'banner-file';
 
@@ -130,28 +129,34 @@ export default function Profile() {
           )}
         </Banner>
 
-        <AvatarWrap>
-          <AvatarImg src={avatarSrc} alt="" />
-          {isMe && (
-            <>
-              <HiddenFile id={avatarInputId} accept="image/*" onChange={onPickAvatar} />
-              <SmallBtn as="label" htmlFor={avatarInputId}>
-                Trocar foto
-              </SmallBtn>
-            </>
-          )}
-        </AvatarWrap>
+        {isMe ? (
+          <>
+            <HiddenFile id={avatarInputId} accept="image/*" onChange={onPickAvatar} />
+            <AvatarWrap htmlFor={avatarInputId}>
+              <AvatarImg src={avatarSrc} alt="" />
+            </AvatarWrap>
+          </>
+        ) : (
+          <div style={{ position: 'relative', width: '120px', height: '120px', margin: '-60px auto 0' }}>
+            <AvatarImg src={avatarSrc} alt="" />
+          </div>
+        )}
 
         <NameHandle>
           <strong>{u.display_name || u.username}</strong>
           <span>@{u.username}</span>
         </NameHandle>
 
+        {u.bio && <p style={{ margin: '8px 0', padding: '0 16px', textAlign: 'center' }}>{u.bio}</p>}
+        {u.location && (
+          <p style={{ margin: '4px 0', padding: '0 16px', fontSize: '14px', color: '#888', textAlign: 'center' }}>
+            📍 {u.location}
+          </p>
+        )}
+
         <Counters>
           Seguidores: {followersCount} · Seguindo: {followingCount}
         </Counters>
-
-        <Actions>{/* ações extras */}</Actions>
       </Header>
 
       <List>

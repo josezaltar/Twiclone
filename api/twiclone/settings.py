@@ -2,16 +2,20 @@
 from pathlib import Path
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
+
+# Carrega variáveis do .env
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Chave fictícia combinada
-SECRET_KEY = os.environ.get(
+# Segurança
+SECRET_KEY = os.getenv(
     "SECRET_KEY",
     "GLtHnY8KvqPsndDT6M7wBjj4K-NFNInUuHFmd3Ae0hGnbtBHh6Zl3L4W72ULdrR_DFGkSTTrHob_a4OpUCKgBw",
 )
 
-DEBUG = False
+DEBUG = os.getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = [
     "josezaltar.pythonanywhere.com",
@@ -64,13 +68,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "twiclone.wsgi.application"
 
-# Banco (SQLite no PA)
+# Banco de dados
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+
+# Modelo de usuário customizado
+AUTH_USER_MODEL = "social.User"
 
 LANGUAGE_CODE = "pt-br"
 TIME_ZONE = "America/Sao_Paulo"
@@ -89,17 +96,18 @@ STORAGES = {
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# CORS/CSRF (Netlify + local)
-CORS_ALLOWED_ORIGINS = [
-    "https://twiiclone.netlify.app",
-    "http://localhost:3000",
-]
-CSRF_TRUSTED_ORIGINS = [
-    "https://twiiclone.netlify.app",
-    "https://josezaltar.pythonanywhere.com",
-    "http://localhost:3000",
-]
-CORS_ALLOW_CREDENTIALS = True  # opcional para cookies
+# CORS/CSRF
+CORS_ALLOWED_ORIGINS = os.getenv(
+    "CORS_ALLOWED_ORIGINS",
+    "http://localhost:3000,http://127.0.0.1:3000"
+).split(",")
+
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    "CSRF_TRUSTED_ORIGINS",
+    "http://localhost:3000,http://127.0.0.1:3000"
+).split(",")
+
+CORS_ALLOW_CREDENTIALS = True
 
 # DRF + JWT
 REST_FRAMEWORK = {
@@ -109,23 +117,20 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
 
-# SIMPLE_JWT explícito (evita inconsistências)
 SIMPLE_JWT = {
     "ALGORITHM": "HS256",
-    "SIGNING_KEY": SECRET_KEY,  # garante que usa a mesma SECRET_KEY
+    "SIGNING_KEY": SECRET_KEY,
     "VERIFYING_KEY": None,
-    "AUTH_HEADER_TYPES": (
-        "Bearer",
-    ),  # seu front/curl usa "Authorization: Bearer <token>"
+    "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=12),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 
-# Segurança básica em produção (HTTPS no PA)
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# Segurança - desabilitado para desenvolvimento local
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
