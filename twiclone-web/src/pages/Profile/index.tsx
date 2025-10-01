@@ -1,5 +1,4 @@
-import { useMemo, useCallback, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useMemo, useCallback } from 'react';import { useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { RealAPI } from '../../lib/realApi';
 import type { ProfileView, Tweet } from '../../lib/realApi';
