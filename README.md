@@ -1,4 +1,5 @@
 Twiclone
+
 Um clone completo do Twitter/X desenvolvido com React + TypeScript no frontend e Django REST Framework no backend.
 
 Sobre o Projeto
