@@ -1,8 +1,8 @@
 // src/lib/http.ts
 import axios from 'axios';
 
-// 🔥 URL fixa para desenvolvimento
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+// Usa a variável de ambiente ou localhost como fallback
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
 
 export const http = axios.create({
   baseURL: API_BASE_URL,
